@@ -1,16 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const verifyToken =require('../middleware/verifyToken');
 
 const {
     getFolder,
     addFolder,
-    deleteFolder
+    deleteFolder,
+    allFolders
 }=require('../controller/folder');
 
-router.get('/folders',getFolder);
 
-router.post('createFolder',addFolder);
+router.get('/folders/:id',verifyToken,getFolder);
 
-router.delete('deleteFolder', deleteFolder);
+router.get('/folders',verifyToken,allFolders);
+
+router.post('/createFolder',addFolder);
+
+router.delete('/deleteFolder/:id', deleteFolder);
 
 module.exports = router;

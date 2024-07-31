@@ -1,20 +1,20 @@
 const jwt = require('jsonwebtoken');
-const JWT_Private_Key = process.env.JWT_Private_Key;
-
+const secret = process.env.JWT_SECRET || 'Formbuilder_app'; // Use environment variable or fallback to default
 
 const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // Assuming Bearer token format
 
-    try {
-        const token = req.header('Authorization').split(' ')[1];
-        if (!token) return res.status(401).json({ message: 'Token Not Found or Valid' });
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
 
-        const decoded = jwt.verify(token, JWT_Private_Key);
-        console.log(decoded);
-        req.refUserId = decoded.userID;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: 'Token Not Found or Valid' });
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Failed to authenticate token' });
     }
+    req.refUserId= decoded.userID; // Use your payload key
+    next();
+  });
 };
 
 module.exports = verifyToken;
