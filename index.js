@@ -11,7 +11,13 @@ const formRoutes = require('./src/routes/form');
 
 dotenv.config();
 
-app.use(cors());
+const corsOptions = {
+    origin: 'https://form-bot-fe.vercel.app',
+    optionsSuccessStatus: 200
+};
+
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/user', userRoutes);
