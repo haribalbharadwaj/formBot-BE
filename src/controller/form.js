@@ -9,11 +9,13 @@ const getForm = async(req,res)=>{
         console.log('Fetching form with ID:', formId);
         const form = await Form.findById(formId);
         if(form){
+            console.log('Form found:', form);
             return res.status(200).json({
                 message:'Form found',
                 data:form
             })
         }else{
+            console.log('Form not found for ID:', formId);
             return res.status(404).json({
                 status:'Failed',
                 message:'Form not found'
