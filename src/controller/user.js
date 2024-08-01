@@ -50,22 +50,25 @@ const registerUser = async (req, res) => {
                 message: 'User already exists, please login or use another email address'
             });
         } else {
-            if (password != confirmPassword) {
+            if (password !== confirmPassword) {
                 return res.status(400).json({
                     message: 'Passwords do not match'
                 });
             }
 
             const encryptedPassword = await bcrypt.hash(password, 10);
-            await User.create({
+            const newUser = await User.create({
                 userName,
                 email,
                 password: encryptedPassword
             });
             res.json({
                 status: "SUCCESS",
-                message: 'User Signup successful'
+                message: 'User Signup successful',
+                userId: newUser._id // Include the userId in the response
             });
+
+            console.log('userId:', newUser._id) // Correct logging
         }
     } catch (error) {
         console.error('Error during user registration:', error);
@@ -75,6 +78,7 @@ const registerUser = async (req, res) => {
         });
     }
 };
+
 
 const loginUser = async (req, res, next) => {
     try {
