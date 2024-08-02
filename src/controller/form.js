@@ -3,33 +3,58 @@ const mongoose = require('mongoose');
 const Form = require('../model/form');
 
 // Get form by ID
-const getForm = async(req,res)=>{
-    try{
-        const {formId} = req.params;
+const getForm = async (req, res) => {
+    try {
+        const { formId } = req.params;
         console.log('Fetching form with ID:', formId);
+        
         const form = await Form.findById(formId);
-        if(form){
+        
+        if (form) {
             console.log('Form found:', form);
+
+            // Combine all inputs into a single array
+            const allInputs = [
+                ...form.textInputs.map(input => ({ ...input._doc, type: 'textInputs' })),
+                ...form.imageInputs.map(input => ({ ...input._doc, type: 'imageInputs' })),
+                ...form.videoInputs.map(input => ({ ...input._doc, type: 'videoInputs' })),
+                ...form.gifInputs.map(input => ({ ...input._doc, type: 'gifInputs' })),
+                ...form.numberInputs.map(input => ({ ...input._doc, type: 'numberInputs' })),
+                ...form.phoneInputs.map(input => ({ ...input._doc, type: 'phoneInputs' })),
+                ...form.emailInputs.map(input => ({ ...input._doc, type: 'emailInputs' })),
+                ...form.dateInputs.map(input => ({ ...input._doc, type: 'dateInputs' })),
+                ...form.ratingInputs.map(input => ({ ...input._doc, type: 'ratingInputs' })),
+                ...form.buttonInputs.map(input => ({ ...input._doc, type: 'buttonInputs' }))
+            ];
+
+            // Sort all inputs by their id
+            allInputs.sort((a, b) => a.id - b.id);
+
             return res.status(200).json({
-                message:'Form found',
-                data:form
-            })
-        }else{
+                message: 'Form found',
+                data: {
+                    formName: form.formName,
+                    refUserId: form.refUserId,
+                    inputs: allInputs
+                }
+            });
+        } else {
             console.log('Form not found for ID:', formId);
             return res.status(404).json({
-                status:'Failed',
-                message:'Form not found'
-            })
+                status: 'Failed',
+                message: 'Form not found'
+            });
         }
-    }catch(error){
+    } catch (error) {
         console.error('Error fetching form data:', error);
         res.status(500).json({
-            status:"Failed",
-            message:"Something went wrong",
-            error: 'Server error' 
-        })
+            status: "Failed",
+            message: "Something went wrong",
+            error: 'Server error'
+        });
     }
-}
+};
+
 
 // Get all forms by user ID
 const allForms = async (req, res) => {
