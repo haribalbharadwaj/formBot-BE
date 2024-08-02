@@ -55,36 +55,57 @@ const allForms = async (req, res) => {
 const addForm = async(req,res,next)=>{
     const {
         formName,
-        textInputs,
-          imageInputs,
-          videoInputs,
-          gifInputs,
-          tinputs,
-          numberInputs,
-          phoneInputs,
-          emailInputs,
-          dateInputs,
-          ratingInputs,
-          buttonInputs
+        textInputs =[],
+          imageInputs=[],
+          videoInputs=[],
+          gifInputs=[],
+          tinputs=[],
+          numberInputs=[],
+          phoneInputs=[],
+          emailInputs=[],
+          dateInputs=[],
+          ratingInputs=[],
+          buttonInputs=[]
     
     } = req.body
+
+    const addSerialNumbers = (...inputsArrays) => {
+        let serialNo = 1;
+        const combinedInputs = inputsArrays.flat();
+        return combinedInputs.map(input => ({ ...input, serialNo: serialNo++ }));
+    };
    
     try{
+
+        const allInputs = addSerialNumbers(
+            textInputs,
+            imageInputs,
+            videoInputs,
+            gifInputs,
+            numberInputs,
+            phoneInputs,
+            emailInputs,
+            dateInputs,
+            ratingInputs,
+            buttonInputs
+        );
+
+        const separateInputs = (type) => allInputs.filter(input => input.type === type);
     
         const newForm = await Form.create({
             formName,
             textInputs,
-              imageInputs,
-              videoInputs,
-              gifInputs,
-              tinputs,
-              numberInputs,
-              phoneInputs,
-              emailInputs,
-              dateInputs,
-              ratingInputs,
-              buttonInputs,
-              refUserId :  req.refUserId 
+            textInputs: separateInputs('text'),
+            imageInputs: separateInputs('image'),
+            videoInputs: separateInputs('video'),
+            gifInputs: separateInputs('gif'),
+            numberInputs: separateInputs('number'),
+            phoneInputs: separateInputs('phone'),
+            emailInputs: separateInputs('email'),
+            dateInputs: separateInputs('date'),
+            ratingInputs: separateInputs('rating'),
+            buttonInputs: separateInputs('button'),
+            refUserId :  req.refUserId 
         })
         res.status(201).json({
             status:"SUCCESS",
