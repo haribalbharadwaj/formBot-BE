@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const inputSchema = new mongoose.Schema({
     id: Number,
     value: String,
-    visible: Boolean
+    visible: Boolean,
+    serialNo: { type: Number, default: 0 }
 });
 
 const formSchema = new mongoose.Schema({
