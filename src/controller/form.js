@@ -35,7 +35,16 @@ const getForm = async (req, res) => {
                 data: {
                     formName: form.formName,
                     refUserId: form.refUserId,
-                    inputs: allInputs
+                    textInputs: form.textInputs || [],
+                    imageInputs: form.imageInputs || [],
+                    videoInputs: form.videoInputs || [],
+                    gifInputs: form.gifInputs || [],
+                    numberInputs: form.numberInputs || [],
+                    emailInputs: form.emailInputs || [],
+                    dateInputs: form.dateInputs || [],
+                    phoneInputs: form.phoneInputs || [],
+                    ratingInputs: form.ratingInputs || [],
+                    buttonInputs: form.buttonInputs || []
                 }
             });
         } else {
@@ -54,6 +63,7 @@ const getForm = async (req, res) => {
         });
     }
 };
+
 
 
 // Get all forms by user ID
