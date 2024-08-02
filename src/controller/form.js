@@ -272,6 +272,8 @@ const updateForm = async (req, res) => {
 
         // Save the updated form
         const updatedForm = await form.save();
+        console.log('Updated Form:', updatedForm);
+
 
         res.json({
             status: "Form updated successfully",
