@@ -12,7 +12,7 @@ router.get('/response/:id', getFormSubmissions);
 
 router.post('/addForm', verifyToken, addForm);
 
-router.put('/updateForm/:formId', updateForm);
+router.put('/updateForm/:id', updateForm);
 
 router.delete('/deleteForm/:id', deleteForm);
 
