@@ -155,17 +155,16 @@ const addForm = async(req,res,next)=>{
     }
 }
 
-// Update an existing form by ID
 const updateForm = async (req, res) => {
     try {
         const formId = req.params.id;
         const {
             formName,
-            textInputs = [],
-            imageInputs = [],
-            videoInputs = [],
-            gifInputs = [],
-            tinputs = [],
+            textInputs = [], // For display purposes
+            imageInputs = [], // For display purposes
+            videoInputs = [], // For display purposes
+            gifInputs = [], // For display purposes
+            tinputs = [], // Actual input fields
             numberInputs = [],
             phoneInputs = [],
             emailInputs = [],
@@ -177,11 +176,11 @@ const updateForm = async (req, res) => {
 
         console.log('Received payload:', req.body); // Log the received payload
 
-
-
-        const filterValidInputs = (inputs) => 
+        // Filter out null values and ensure each input has a value property
+        const filterValidInputs = (inputs) =>
             inputs.filter(input => input && typeof input === 'object' && 'value' in input);
 
+        // Apply filtering
         const filteredTinputs = filterValidInputs(tinputs);
         const filteredNumberInputs = filterValidInputs(numberInputs);
         const filteredEmailInputs = filterValidInputs(emailInputs);
@@ -189,7 +188,6 @@ const updateForm = async (req, res) => {
         const filteredPhoneInputs = filterValidInputs(phoneInputs);
         const filteredRatingInputs = filterValidInputs(ratingInputs);
         const filteredButtonInputs = filterValidInputs(buttonInputs);
-
 
         // Find the form
         const form = await Form.findById(formId);
@@ -202,11 +200,11 @@ const updateForm = async (req, res) => {
 
         // Update the form fields
         form.formName = formName || form.formName;
-        form.tinputs = filteredTinputs;
-        form.imageInputs = imageInputs;
-        form.videoInputs = videoInputs;
-        form.gifInputs = gifInputs;
-        form.tinputs = tinputs;
+        form.textInputs = textInputs; // Keep textInputs for display
+        form.imageInputs = imageInputs; // Keep imageInputs for display
+        form.videoInputs = videoInputs; // Keep videoInputs for display
+        form.gifInputs = gifInputs; // Keep gifInputs for display
+        form.tinputs = filteredTinputs; // Use tinputs for actual input data
         form.numberInputs = filteredNumberInputs;
         form.phoneInputs = filteredPhoneInputs;
         form.emailInputs = filteredEmailInputs;
@@ -214,6 +212,7 @@ const updateForm = async (req, res) => {
         form.ratingInputs = filteredRatingInputs;
         form.buttonInputs = filteredButtonInputs;
         form.refUserId = refUserId || form.refUserId;
+
         // Increment visit count and update views
         form.visitCount = (form.visitCount || 0) + 1;
         form.views = (form.views || 0) + 1;
@@ -270,7 +269,7 @@ const updateForm = async (req, res) => {
         // Add submission
         const submission = {
             inputs: {
-                tinputs: filteredTextInputs,
+                tinputs: filteredTinputs,
                 numberInputs: filteredNumberInputs,
                 phoneInputs: filteredPhoneInputs,
                 emailInputs: filteredEmailInputs,
@@ -289,7 +288,6 @@ const updateForm = async (req, res) => {
         const updatedForm = await form.save();
         console.log('Updated Form:', updatedForm);
 
-
         res.json({
             status: "Form updated successfully",
             data: updatedForm
@@ -302,7 +300,7 @@ const updateForm = async (req, res) => {
             error: error.message
         });
     }
-}
+};
 
 const getFormSubmissions = async (req, res) => {
     try {
