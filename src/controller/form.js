@@ -177,6 +177,19 @@ const updateForm = async (req, res) => {
 
         console.log('Received payload:', req.body); // Log the received payload
 
+
+
+        const filterNullValues = (inputs) => inputs.filter(input => input !== null && input !== undefined);
+
+        const filteredTextInputs = filterNullValues(textInputs);
+        const filteredNumberInputs = filterNullValues(numberInputs);
+        const filteredEmailInputs = filterNullValues(emailInputs);
+        const filteredDateInputs = filterNullValues(dateInputs);
+        const filteredPhoneInputs = filterNullValues(phoneInputs);
+        const filteredRatingInputs = filterNullValues(ratingInputs);
+        const filteredButtonInputs = filterNullValues(buttonInputs);
+
+
         // Find the form
         const form = await Form.findById(formId);
         if (!form) {
@@ -235,7 +248,7 @@ const updateForm = async (req, res) => {
         });
 
         // Format and update the last update time
-        const formattedUpdateTime = moment(currentTime).format('MMM D h:mm A');
+        const formattedUpdateTime = moment(currentTime).format('MMM D YYYY, h:mm:ss a');
         form.lastUpdateTime = formattedUpdateTime;
 
         // Calculate completion rate
