@@ -179,15 +179,16 @@ const updateForm = async (req, res) => {
 
 
 
-        const filterNullValues = (inputs) => inputs.filter(input => input !== null && input !== undefined);
+        const filterValidInputs = (inputs) => 
+            inputs.filter(input => input && typeof input === 'object' && 'value' in input);
 
-        const filteredTextInputs = filterNullValues(textInputs);
-        const filteredNumberInputs = filterNullValues(numberInputs);
-        const filteredEmailInputs = filterNullValues(emailInputs);
-        const filteredDateInputs = filterNullValues(dateInputs);
-        const filteredPhoneInputs = filterNullValues(phoneInputs);
-        const filteredRatingInputs = filterNullValues(ratingInputs);
-        const filteredButtonInputs = filterNullValues(buttonInputs);
+        const filteredTinputs = filterValidInputs(tinputs);
+        const filteredNumberInputs = filterValidInputs(numberInputs);
+        const filteredEmailInputs = filterValidInputs(emailInputs);
+        const filteredDateInputs = filterValidInputs(dateInputs);
+        const filteredPhoneInputs = filterValidInputs(phoneInputs);
+        const filteredRatingInputs = filterValidInputs(ratingInputs);
+        const filteredButtonInputs = filterValidInputs(buttonInputs);
 
 
         // Find the form
@@ -201,19 +202,18 @@ const updateForm = async (req, res) => {
 
         // Update the form fields
         form.formName = formName || form.formName;
-        form.textInputs = textInputs || form.textInputs;
-        form.imageInputs = imageInputs || form.imageInputs;
-        form.videoInputs = videoInputs || form.videoInputs;
-        form.gifInputs = gifInputs || form.gifInputs;
-        form.tinputs = tinputs || form.tinputs;
-        form.numberInputs = numberInputs || form.numberInputs;
-        form.phoneInputs = phoneInputs || form.phoneInputs;
-        form.emailInputs = emailInputs || form.emailInputs;
-        form.dateInputs = dateInputs || form.dateInputs;
-        form.ratingInputs = ratingInputs || form.ratingInputs;
-        form.buttonInputs = buttonInputs || form.buttonInputs;
+        form.tinputs = filteredTinputs;
+        form.imageInputs = imageInputs;
+        form.videoInputs = videoInputs;
+        form.gifInputs = gifInputs;
+        form.tinputs = tinputs;
+        form.numberInputs = filteredNumberInputs;
+        form.phoneInputs = filteredPhoneInputs;
+        form.emailInputs = filteredEmailInputs;
+        form.dateInputs = filteredDateInputs;
+        form.ratingInputs = filteredRatingInputs;
+        form.buttonInputs = filteredButtonInputs;
         form.refUserId = refUserId || form.refUserId;
-
         // Increment visit count and update views
         form.visitCount = (form.visitCount || 0) + 1;
         form.views = (form.views || 0) + 1;
@@ -270,13 +270,13 @@ const updateForm = async (req, res) => {
         // Add submission
         const submission = {
             inputs: {
-                tinputs,
-                numberInputs,
-                phoneInputs,
-                emailInputs,
-                dateInputs,
-                ratingInputs,
-                buttonInputs
+                tinputs: filteredTextInputs,
+                numberInputs: filteredNumberInputs,
+                phoneInputs: filteredPhoneInputs,
+                emailInputs: filteredEmailInputs,
+                dateInputs: filteredDateInputs,
+                ratingInputs: filteredRatingInputs,
+                buttonInputs: filteredButtonInputs
             }
         };
         if (!Array.isArray(form.submissions)) {
@@ -298,7 +298,8 @@ const updateForm = async (req, res) => {
         console.error('Error updating form:', error);
         res.status(500).json({
             status: "Failed",
-            message: "Something went wrong"
+            message: "Something went wrong",
+            error: error.message
         });
     }
 }
