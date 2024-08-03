@@ -175,6 +175,8 @@ const updateForm = async (req, res) => {
             refUserId
         } = req.body;
 
+        console.log('Received payload:', req.body); // Log the received payload
+
         // Find the form
         const form = await Form.findById(formId);
         if (!form) {
