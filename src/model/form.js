@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const inputSchema = new mongoose.Schema({
     id: Number,
     value: String,
