@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const inputSchema = new mongoose.Schema({
-    id: Number,
-    value: String,
-    visible: Boolean,
+    id: { type: String, default: () => new mongoose.Types.ObjectId().toString() }, // Generate unique ID automatically
+    value: { type: String, default: '' },
+    visible: { type: Boolean, default: true },
     serialNo: { type: Number, default: 0 }
 });
 
@@ -14,7 +14,6 @@ const formSchema = new mongoose.Schema({
     imageInputs: { type: [inputSchema], default: [] },
     videoInputs: { type: [inputSchema], default: [] },
     gifInputs: { type: [inputSchema], default: [] },
-    tinputs: { type: [inputSchema], default: [] },
     numberInputs: { type: [inputSchema], default: [] },
     emailInputs: { type: [inputSchema], default: [] },
     dateInputs: { type: [inputSchema], default: [] },
