@@ -87,83 +87,75 @@ const allForms = async (req, res) => {
 
 // Add a new form
 
-const addForm = async(req, res, next) => {
+const addForm = async(req,res,next)=>{
     const {
         formName,
-        textInputs = [],
-        imageInputs = [],
-        videoInputs = [],
-        gifInputs = [],
-        tinputs = [],
-        numberInputs = [],
-        phoneInputs = [],
-        emailInputs = [],
-        dateInputs = [],
-        ratingInputs = [],
-        buttonInputs = []
-    } = req.body;
+        textInputs =[],
+          imageInputs=[],
+          videoInputs=[],
+          gifInputs=[],
+          tinputs=[],
+          numberInputs=[],
+          phoneInputs=[],
+          emailInputs=[],
+          dateInputs=[],
+          ratingInputs=[],
+          buttonInputs=[]
+    
+    } = req.body
 
-    const assignEmptyValues = (inputs, defaultValue = '') => {
-        return inputs.map(input => ({
-            id: input.id || new mongoose.Types.ObjectId().toString(), // Generate unique ID if not already present
-            value: input.value || defaultValue,
-            visible: input.visible !== undefined ? input.visible : true
-        }));
-    };
-
-    const combinedInputs = [
-        ...assignEmptyValues(textInputs, 'default text'),
-        ...assignEmptyValues(imageInputs, 'default image'),
-        ...assignEmptyValues(videoInputs, 'default video'),
-        ...assignEmptyValues(gifInputs, 'default gif'),
-        ...assignEmptyValues(tinputs),
-        ...assignEmptyValues(numberInputs),
-        ...assignEmptyValues(phoneInputs),
-        ...assignEmptyValues(emailInputs),
-        ...assignEmptyValues(dateInputs),
-        ...assignEmptyValues(ratingInputs),
-        ...assignEmptyValues(buttonInputs, 'default button')
-    ];
-
-    const addSerialNumbers = (inputs) => {
+    const addSerialNumbers = (...inputsArrays) => {
         let serialNo = 1;
-        return inputs.map(input => ({ ...input, serialNo: serialNo++ }));
+        const combinedInputs = inputsArrays.flat();
+        return combinedInputs.map(input => ({ ...input, serialNo: serialNo++ }));
     };
+   
+    try{
 
-    const serialInputs = addSerialNumbers(combinedInputs);
+        const allInputs = addSerialNumbers(
+            textInputs,
+            imageInputs,
+            videoInputs,
+            gifInputs,
+            tinputs,
+            numberInputs,
+            phoneInputs,
+            emailInputs,
+            dateInputs,
+            ratingInputs,
+            buttonInputs
+        );
 
-    const separateInputs = (type) => serialInputs.filter(input => input.type === type);
-
-    try {
+        const separateInputs = (type) => allInputs.filter(input => input.type === type);
+    
         const newForm = await Form.create({
             formName,
+            textInputs,
             textInputs: separateInputs('text'),
             imageInputs: separateInputs('image'),
             videoInputs: separateInputs('video'),
-            tinputs:separateInputs('tinput'),
             gifInputs: separateInputs('gif'),
+            tinputs:separateInputs('tinput'),
             numberInputs: separateInputs('number'),
             phoneInputs: separateInputs('phone'),
             emailInputs: separateInputs('email'),
             dateInputs: separateInputs('date'),
             ratingInputs: separateInputs('rating'),
             buttonInputs: separateInputs('button'),
-            refUserId: req.refUserId
-        });
-
+            refUserId :  req.refUserId 
+        })
         res.status(201).json({
-            status: "SUCCESS",
-            message: 'Form added successfully',
+            status:"SUCCESS",
+            message:'Form added successfully',
             data: newForm
-        });
-    } catch (error) {
+        })
+    }catch(error){
         next({
             message: "Error Adding Form",
             error: error.message
         });
     }
-};
-
+}
 
 const updateForm = async (req, res) => {
     try {
