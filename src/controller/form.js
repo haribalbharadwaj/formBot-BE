@@ -19,6 +19,7 @@ const getForm = async (req, res) => {
                 ...form.imageInputs.map(input => ({ ...input._doc, type: 'imageInputs' })),
                 ...form.videoInputs.map(input => ({ ...input._doc, type: 'videoInputs' })),
                 ...form.gifInputs.map(input => ({ ...input._doc, type: 'gifInputs' })),
+                ...form.tinputs.map(input=>({...input._doc,type:'tinputs'})),
                 ...form.numberInputs.map(input => ({ ...input._doc, type: 'numberInputs' })),
                 ...form.phoneInputs.map(input => ({ ...input._doc, type: 'phoneInputs' })),
                 ...form.emailInputs.map(input => ({ ...input._doc, type: 'emailInputs' })),
@@ -35,16 +36,7 @@ const getForm = async (req, res) => {
                 data: {
                     formName: form.formName,
                     refUserId: form.refUserId,
-                    textInputs: form.textInputs || [],
-                    imageInputs: form.imageInputs || [],
-                    videoInputs: form.videoInputs || [],
-                    gifInputs: form.gifInputs || [],
-                    numberInputs: form.numberInputs || [],
-                    emailInputs: form.emailInputs || [],
-                    dateInputs: form.dateInputs || [],
-                    phoneInputs: form.phoneInputs || [],
-                    ratingInputs: form.ratingInputs || [],
-                    buttonInputs: form.buttonInputs || []
+                    inputs: allInputs
                 }
             });
         } else {
@@ -59,7 +51,7 @@ const getForm = async (req, res) => {
         res.status(500).json({
             status: "Failed",
             message: "Something went wrong",
-            error: 'Server error'
+            error: error.message
         });
     }
 };
@@ -130,20 +122,20 @@ const addForm = async(req,res,next)=>{
     
         const newForm = await Form.create({
             formName,
-            textInputs,
-            textInputs: separateInputs('text'),
-            imageInputs: separateInputs('image'),
-            videoInputs: separateInputs('video'),
-            gifInputs: separateInputs('gif'),
-            tinputs:separateInputs('tinput'),
-            numberInputs: separateInputs('number'),
-            phoneInputs: separateInputs('phone'),
-            emailInputs: separateInputs('email'),
-            dateInputs: separateInputs('date'),
-            ratingInputs: separateInputs('rating'),
-            buttonInputs: separateInputs('button'),
-            refUserId :  req.refUserId 
-        })
+            textInputs: separateInputs('textInputs'),
+            imageInputs: separateInputs('imageInputs'),
+            videoInputs: separateInputs('videoInputs'),
+            gifInputs: separateInputs('gifInputs'),
+            tinputs: separateInputs('tinputs'),
+            numberInputs: separateInputs('numberInputs'),
+            phoneInputs: separateInputs('phoneInputs'),
+            emailInputs: separateInputs('emailInputs'),
+            dateInputs: separateInputs('dateInputs'),
+            ratingInputs: separateInputs('ratingInputs'),
+            buttonInputs: separateInputs('buttonInputs'),
+            refUserId: req.refUserId
+        });
+
         res.status(201).json({
             status:"SUCCESS",
             message:'Form added successfully',
@@ -316,6 +308,8 @@ const getFormSubmissions = async (req, res) => {
         if (!form) {
             return res.status(404).send({ message: 'Form not found' });
         }
+
+        const submissions = form.submissions;
 
         res.status(200).send({ data: form });
     } catch (error) {
