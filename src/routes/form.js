@@ -8,7 +8,7 @@ router.get('/forms/:userId',verifyToken, allForms);
 
 router.get('/getForm/:formId', getForm);
 
-router.get('/response/:id', getFormSubmissions); 
+router.get('/response/:formId', getFormSubmissions); 
 
 router.post('/addForm', verifyToken, addForm);
 

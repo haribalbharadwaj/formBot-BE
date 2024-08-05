@@ -19,7 +19,7 @@ const getForm = async (req, res) => {
                 ...form.imageInputs.map(input => ({ ...input._doc, type: 'imageInputs' })),
                 ...form.videoInputs.map(input => ({ ...input._doc, type: 'videoInputs' })),
                 ...form.gifInputs.map(input => ({ ...input._doc, type: 'gifInputs' })),
-                ...form.tinputs.map(input=>({...input._doc,type:'tinputs'})),
+                ...form.tinputs.map(input => ({ ...input._doc, type: 'tinputs' })),
                 ...form.numberInputs.map(input => ({ ...input._doc, type: 'numberInputs' })),
                 ...form.phoneInputs.map(input => ({ ...input._doc, type: 'phoneInputs' })),
                 ...form.emailInputs.map(input => ({ ...input._doc, type: 'emailInputs' })),
@@ -56,11 +56,8 @@ const getForm = async (req, res) => {
     }
 };
 
-
-
 // Get all forms by user ID
 const allForms = async (req, res) => {
-  
     try {
         const userId = req.params.userId;
         const forms = await Form.find({ refUserId: userId });
@@ -76,89 +73,93 @@ const allForms = async (req, res) => {
     }
 };
 
-
 // Add a new form
-
-const addForm = async(req,res,next)=>{
+const addForm = async (req, res, next) => {
     const {
         formName,
-        textInputs =[],
-          imageInputs=[],
-          videoInputs=[],
-          gifInputs=[],
-          tinputs=[],
-          numberInputs=[],
-          phoneInputs=[],
-          emailInputs=[],
-          dateInputs=[],
-          ratingInputs=[],
-          buttonInputs=[]
-    
-    } = req.body
+        textInputs = [],
+        imageInputs = [],
+        videoInputs = [],
+        gifInputs = [],
+        tinputs = [], // Text inputs for Formbot
+        numberInputs = [],
+        phoneInputs = [],
+        emailInputs = [],
+        dateInputs = [],
+        ratingInputs = [],
+        buttonInputs = []
+    } = req.body;
 
-    const addSerialNumbers = (...inputsArrays) => {
-        let serialNo = 1;
-        const combinedInputs = inputsArrays.flat();
-        return combinedInputs.map(input => ({ ...input, serialNo: serialNo++ }));
+    console.log('Request Body:', req.body);
+
+    const addSerialNumbers = (inputs, type) => {
+        return inputs.map((input, index) => ({
+            ...input,
+            id: index + 1,
+            type
+        }));
     };
-   
-    try{
 
-        const allInputs = addSerialNumbers(
-            textInputs,
-            imageInputs,
-            videoInputs,
-            gifInputs,
-            tinputs,
-            numberInputs,
-            phoneInputs,
-            emailInputs,
-            dateInputs,
-            ratingInputs,
-            buttonInputs
-        );
+    try {
+        const allInputs = [
+            ...addSerialNumbers(textInputs, 'textInputs'),
+            ...addSerialNumbers(imageInputs, 'imageInputs'),
+            ...addSerialNumbers(videoInputs, 'videoInputs'),
+            ...addSerialNumbers(gifInputs, 'gifInputs'),
+            ...addSerialNumbers(tinputs, 'tinputs'),
+            ...addSerialNumbers(numberInputs, 'numberInputs'),
+            ...addSerialNumbers(phoneInputs, 'phoneInputs'),
+            ...addSerialNumbers(emailInputs, 'emailInputs'),
+            ...addSerialNumbers(dateInputs, 'dateInputs'),
+            ...addSerialNumbers(ratingInputs, 'ratingInputs'),
+            ...addSerialNumbers(buttonInputs, 'buttonInputs')
+        ];
 
-        const separateInputs = (type) => allInputs.filter(input => input.type === type);
-    
-        const newForm = await Form.create({
+        const newForm = new Form({
             formName,
-            textInputs: separateInputs('textInputs'),
-            imageInputs: separateInputs('imageInputs'),
-            videoInputs: separateInputs('videoInputs'),
-            gifInputs: separateInputs('gifInputs'),
-            tinputs: separateInputs('tinputs'),
-            numberInputs: separateInputs('numberInputs'),
-            phoneInputs: separateInputs('phoneInputs'),
-            emailInputs: separateInputs('emailInputs'),
-            dateInputs: separateInputs('dateInputs'),
-            ratingInputs: separateInputs('ratingInputs'),
-            buttonInputs: separateInputs('buttonInputs'),
+            textInputs: allInputs.filter(input => input.type === 'textInputs'),
+            imageInputs: allInputs.filter(input => input.type === 'imageInputs'),
+            videoInputs: allInputs.filter(input => input.type === 'videoInputs'),
+            gifInputs: allInputs.filter(input => input.type === 'gifInputs'),
+            tinputs: allInputs.filter(input => input.type === 'tinputs'),
+            numberInputs: allInputs.filter(input => input.type === 'numberInputs'),
+            phoneInputs: allInputs.filter(input => input.type === 'phoneInputs'),
+            emailInputs: allInputs.filter(input => input.type === 'emailInputs'),
+            dateInputs: allInputs.filter(input => input.type === 'dateInputs'),
+            ratingInputs: allInputs.filter(input => input.type === 'ratingInputs'),
+            buttonInputs: allInputs.filter(input => input.type === 'buttonInputs'),
             refUserId: req.refUserId
         });
 
+        await newForm.save();
+
         res.status(201).json({
-            status:"SUCCESS",
-            message:'Form added successfully',
+            status: "SUCCESS",
+            message: 'Form added successfully',
             data: newForm
-        })
-    }catch(error){
+        });
+
+        console.log('New Form:', newForm);
+    } catch (error) {
         next({
             message: "Error Adding Form",
             error: error.message
         });
     }
-}
+};
 
+
+// Update a form
 const updateForm = async (req, res) => {
     try {
         const formId = req.params.id;
         const {
             formName,
-            textInputs = [], // For display purposes
-            imageInputs = [], // For display purposes
-            videoInputs = [], // For display purposes
-            gifInputs = [], // For display purposes
-            tinputs = [], // Actual input fields
+            textInputs = [],
+            imageInputs = [],
+            videoInputs = [],
+            gifInputs = [],
+            tinputs = [],
             numberInputs = [],
             phoneInputs = [],
             emailInputs = [],
@@ -168,22 +169,30 @@ const updateForm = async (req, res) => {
             refUserId
         } = req.body;
 
-        console.log('Received payload:', req.body); // Log the received payload
+        console.log('Received payload:', req.body);
 
-        // Filter out null values and ensure each input has a value property
-        const filterValidInputs = (inputs) =>
-            inputs.filter(input => input && typeof input === 'object' && 'value' in input);
+        const addSerialNumbers = (inputs, type) => {
+            return inputs.map((input, index) => ({
+                ...input,
+                id: index + 1,
+                type
+            }));
+        };
 
-        // Apply filtering
-        const filteredTinputs = filterValidInputs(tinputs);
-        const filteredNumberInputs = filterValidInputs(numberInputs);
-        const filteredEmailInputs = filterValidInputs(emailInputs);
-        const filteredDateInputs = filterValidInputs(dateInputs);
-        const filteredPhoneInputs = filterValidInputs(phoneInputs);
-        const filteredRatingInputs = filterValidInputs(ratingInputs);
-        const filteredButtonInputs = filterValidInputs(buttonInputs);
+        const allInputs = [
+            ...addSerialNumbers(textInputs, 'textInputs'),
+            ...addSerialNumbers(imageInputs, 'imageInputs'),
+            ...addSerialNumbers(videoInputs, 'videoInputs'),
+            ...addSerialNumbers(gifInputs, 'gifInputs'),
+            ...addSerialNumbers(tinputs, 'tinputs'),
+            ...addSerialNumbers(numberInputs, 'numberInputs'),
+            ...addSerialNumbers(phoneInputs, 'phoneInputs'),
+            ...addSerialNumbers(emailInputs, 'emailInputs'),
+            ...addSerialNumbers(dateInputs, 'dateInputs'),
+            ...addSerialNumbers(ratingInputs, 'ratingInputs'),
+            ...addSerialNumbers(buttonInputs, 'buttonInputs')
+        ];
 
-        // Find the form
         const form = await Form.findById(formId);
         if (!form) {
             return res.status(404).json({
@@ -192,41 +201,30 @@ const updateForm = async (req, res) => {
             });
         }
 
-        // Update the form fields
         form.formName = formName || form.formName;
-        form.textInputs = textInputs; // Keep textInputs for display
-        form.imageInputs = imageInputs; // Keep imageInputs for display
-        form.videoInputs = videoInputs; // Keep videoInputs for display
-        form.gifInputs = gifInputs; // Keep gifInputs for display
-        form.tinputs = filteredTinputs; // Use tinputs for actual input data
-        form.numberInputs = filteredNumberInputs;
-        form.phoneInputs = filteredPhoneInputs;
-        form.emailInputs = filteredEmailInputs;
-        form.dateInputs = filteredDateInputs;
-        form.ratingInputs = filteredRatingInputs;
-        form.buttonInputs = filteredButtonInputs;
+        form.textInputs = allInputs.filter(input => input.type === 'textInputs');
+        form.imageInputs = allInputs.filter(input => input.type === 'imageInputs');
+        form.videoInputs = allInputs.filter(input => input.type === 'videoInputs');
+        form.gifInputs = allInputs.filter(input => input.type === 'gifInputs');
+        form.tinputs = allInputs.filter(input => input.type === 'tinputs');
+        form.numberInputs = allInputs.filter(input => input.type === 'numberInputs');
+        form.phoneInputs = allInputs.filter(input => input.type === 'phoneInputs');
+        form.emailInputs = allInputs.filter(input => input.type === 'emailInputs');
+        form.dateInputs = allInputs.filter(input => input.type === 'dateInputs');
+        form.ratingInputs = allInputs.filter(input => input.type === 'ratingInputs');
+        form.buttonInputs = allInputs.filter(input => input.type === 'buttonInputs');
         form.refUserId = refUserId || form.refUserId;
 
-        // Increment visit count and update views
         form.visitCount = (form.visitCount || 0) + 1;
         form.views = (form.views || 0) + 1;
 
-        // Ensure startTimes and updateTimes are initialized
         if (!Array.isArray(form.startTimes)) {
-            console.log('Initializing startTimes as an empty array');
             form.startTimes = [];
         }
         if (!Array.isArray(form.updateTimes)) {
-            console.log('Initializing updateTimes as an empty array');
             form.updateTimes = [];
         }
 
-        console.log('Before push:', {
-            startTimes: form.startTimes,
-            updateTimes: form.updateTimes
-        });
-
-        // Update start and update times
         const currentTime = new Date();
         if (form.startTimes.length === 0) {
             form.startTimes.push(currentTime);
@@ -235,16 +233,9 @@ const updateForm = async (req, res) => {
             form.updateTimes.push(currentTime);
         }
 
-        console.log('After push:', {
-            startTimes: form.startTimes,
-            updateTimes: form.updateTimes
-        });
-
-        // Format and update the last update time
         const formattedUpdateTime = moment(currentTime).format('MMM D YYYY, h:mm:ss a');
         form.lastUpdateTime = formattedUpdateTime;
 
-        // Calculate completion rate
         const totalInputs = form.tinputs.length + form.numberInputs.length +
                             form.phoneInputs.length + form.emailInputs.length +
                             form.dateInputs.length + form.ratingInputs.length +
@@ -258,39 +249,20 @@ const updateForm = async (req, res) => {
                                 form.ratingInputs.filter(input => input.value).length +
                                 form.buttonInputs.filter(input => input.value).length;
 
-        form.completionRate = totalInputs ? (completedInputs / totalInputs) * 100 : 0;
+        form.completionRate = totalInputs === 0 ? 0 : (completedInputs / totalInputs) * 100;
 
-        // Add submission
-        const submission = {
-            inputs: {
-                tinputs: filteredTinputs,
-                numberInputs: filteredNumberInputs,
-                phoneInputs: filteredPhoneInputs,
-                emailInputs: filteredEmailInputs,
-                dateInputs: filteredDateInputs,
-                ratingInputs: filteredRatingInputs,
-                buttonInputs: filteredButtonInputs
-            }
-        };
-        if (!Array.isArray(form.submissions)) {
-            console.log('Initializing submissions as an empty array');
-            form.submissions = [];
-        }
-        form.submissions.push(submission);
-
-        // Save the updated form
         const updatedForm = await form.save();
-        console.log('Updated Form:', updatedForm);
 
-        res.json({
-            status: "Form updated successfully",
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Form updated successfully",
             data: updatedForm
         });
     } catch (error) {
         console.error('Error updating form:', error);
         res.status(500).json({
-            status: "Failed",
-            message: "Something went wrong",
+            status: 'ERROR',
+            message: 'Error updating form',
             error: error.message
         });
     }
@@ -298,7 +270,9 @@ const updateForm = async (req, res) => {
 
 const getFormSubmissions = async (req, res) => {
     try {
-        const formId = req.params.id;
+        console.log('Request params:', req.params);
+        const formId = req.params.formId;
+        console.log('Received form ID:', formId);
 
         if (!mongoose.Types.ObjectId.isValid(formId)) {
             return res.status(400).send({ message: 'Invalid form ID' });
@@ -308,8 +282,6 @@ const getFormSubmissions = async (req, res) => {
         if (!form) {
             return res.status(404).send({ message: 'Form not found' });
         }
-
-        const submissions = form.submissions;
 
         res.status(200).send({ data: form });
     } catch (error) {
