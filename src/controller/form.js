@@ -2,6 +2,16 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Form = require('../model/form');
 
+
+// Helper function to assign serial numbers
+const addSerialNumbers = (inputs, type) => {
+    return inputs.map((input, index) => ({
+        ...input,
+        serialNo: index + 1, // Assigning serial numbers based on final index
+        type
+    }));
+};
+
 // Get form by ID
 const getForm = async (req, res) => {
     try {
@@ -15,21 +25,21 @@ const getForm = async (req, res) => {
 
             // Combine all inputs into a single array
             const allInputs = [
-                ...form.textInputs.map(input => ({ ...input._doc, type: 'textInputs' })),
-                ...form.imageInputs.map(input => ({ ...input._doc, type: 'imageInputs' })),
-                ...form.videoInputs.map(input => ({ ...input._doc, type: 'videoInputs' })),
-                ...form.gifInputs.map(input => ({ ...input._doc, type: 'gifInputs' })),
-                ...form.tinputs.map(input => ({ ...input._doc, type: 'tinputs' })),
-                ...form.numberInputs.map(input => ({ ...input._doc, type: 'numberInputs' })),
-                ...form.phoneInputs.map(input => ({ ...input._doc, type: 'phoneInputs' })),
-                ...form.emailInputs.map(input => ({ ...input._doc, type: 'emailInputs' })),
-                ...form.dateInputs.map(input => ({ ...input._doc, type: 'dateInputs' })),
-                ...form.ratingInputs.map(input => ({ ...input._doc, type: 'ratingInputs' })),
-                ...form.buttonInputs.map(input => ({ ...input._doc, type: 'buttonInputs' }))
+                ...addSerialNumbers(form.textInputs, 'textInputs'),
+                ...addSerialNumbers(form.imageInputs, 'imageInputs'),
+                ...addSerialNumbers(form.videoInputs, 'videoInputs'),
+                ...addSerialNumbers(form.gifInputs, 'gifInputs'),
+                ...addSerialNumbers(form.tinputs, 'tinputs'),
+                ...addSerialNumbers(form.numberInputs, 'numberInputs'),
+                ...addSerialNumbers(form.phoneInputs, 'phoneInputs'),
+                ...addSerialNumbers(form.emailInputs, 'emailInputs'),
+                ...addSerialNumbers(form.dateInputs, 'dateInputs'),
+                ...addSerialNumbers(form.ratingInputs, 'ratingInputs'),
+                ...addSerialNumbers(form.buttonInputs, 'buttonInputs')
             ];
 
-            // Sort all inputs by their id
-            allInputs.sort((a, b) => a.id - b.id);
+            // Sort all inputs by their serialNo
+            allInputs.sort((a, b) => a.serialNo - b.serialNo);
 
             return res.status(200).json({
                 message: 'Form found',
@@ -92,14 +102,6 @@ const addForm = async (req, res, next) => {
 
     console.log('Request Body:', req.body);
 
-    const addSerialNumbers = (inputs, type) => {
-        return inputs.map((input, index) => ({
-            ...input,
-            id: index + 1,
-            type
-        }));
-    };
-
     try {
         const allInputs = [
             ...addSerialNumbers(textInputs, 'textInputs'),
@@ -148,7 +150,6 @@ const addForm = async (req, res, next) => {
     }
 };
 
-
 // Update a form
 const updateForm = async (req, res) => {
     try {
@@ -170,14 +171,6 @@ const updateForm = async (req, res) => {
         } = req.body;
 
         console.log('Received payload:', req.body);
-
-        const addSerialNumbers = (inputs, type) => {
-            return inputs.map((input, index) => ({
-                ...input,
-                id: index + 1,
-                type
-            }));
-        };
 
         const allInputs = [
             ...addSerialNumbers(textInputs, 'textInputs'),
@@ -258,11 +251,13 @@ const updateForm = async (req, res) => {
             message: "Form updated successfully",
             data: updatedForm
         });
+
+        console.log('Updated Form:', updatedForm);
     } catch (error) {
         console.error('Error updating form:', error);
         res.status(500).json({
-            status: 'ERROR',
-            message: 'Error updating form',
+            status: "Failed",
+            message: "Something went wrong",
             error: error.message
         });
     }
