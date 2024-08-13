@@ -261,7 +261,7 @@ const updateForm = async (req, res) => {
             error: error.message
         });
     }
-};
+}; 
 
 const getFormSubmissions = async (req, res) => {
     try {
