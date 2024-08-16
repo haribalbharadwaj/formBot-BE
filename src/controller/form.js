@@ -2,9 +2,12 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Form = require('../model/form');
 
-
 // Helper function to assign serial numbers
-const addSerialNumbers = (inputs, type) => {
+const addSerialNumbers = (inputs = [], type) => {
+    if (!Array.isArray(inputs)) {
+        console.error(`Expected an array but received ${typeof inputs} for type ${type}`);
+        return []; // Return an empty array if inputs is not an array
+    }
     return inputs.map((input, index) => ({
         ...input,
         serialNo: index + 1, // Assigning serial numbers based on final index
@@ -23,23 +26,19 @@ const getForm = async (req, res) => {
         if (form) {
             console.log('Form found:', form);
 
-            // Combine all inputs into a single array
             const allInputs = [
-                ...addSerialNumbers(form.textInputs, 'textInputs'),
-                ...addSerialNumbers(form.imageInputs, 'imageInputs'),
-                ...addSerialNumbers(form.videoInputs, 'videoInputs'),
-                ...addSerialNumbers(form.gifInputs, 'gifInputs'),
-                ...addSerialNumbers(form.tinputs, 'tinputs'),
-                ...addSerialNumbers(form.numberInputs, 'numberInputs'),
-                ...addSerialNumbers(form.phoneInputs, 'phoneInputs'),
-                ...addSerialNumbers(form.emailInputs, 'emailInputs'),
-                ...addSerialNumbers(form.dateInputs, 'dateInputs'),
-                ...addSerialNumbers(form.ratingInputs, 'ratingInputs'),
-                ...addSerialNumbers(form.buttonInputs, 'buttonInputs')
-            ];
-
-            // Sort all inputs by their serialNo
-            allInputs.sort((a, b) => a.serialNo - b.serialNo);
+                ...form.textInputs,
+                ...form.imageInputs,
+                ...form.videoInputs,
+                ...form.gifInputs,
+                ...form.tinputs,
+                ...form.numberInputs,
+                ...form.phoneInputs,
+                ...form.emailInputs,
+                ...form.dateInputs,
+                ...form.ratingInputs,
+                ...form.buttonInputs
+            ].sort((a, b) => a.serialNo - b.serialNo);
 
             return res.status(200).json({
                 message: 'Form found',
@@ -91,7 +90,7 @@ const addForm = async (req, res, next) => {
         imageInputs = [],
         videoInputs = [],
         gifInputs = [],
-        tinputs = [], // Text inputs for Formbot
+        tinputs = [],
         numberInputs = [],
         phoneInputs = [],
         emailInputs = [],
@@ -103,34 +102,20 @@ const addForm = async (req, res, next) => {
     console.log('Request Body:', req.body);
 
     try {
-        const allInputs = [
-            ...addSerialNumbers(textInputs, 'textInputs'),
-            ...addSerialNumbers(imageInputs, 'imageInputs'),
-            ...addSerialNumbers(videoInputs, 'videoInputs'),
-            ...addSerialNumbers(gifInputs, 'gifInputs'),
-            ...addSerialNumbers(tinputs, 'tinputs'),
-            ...addSerialNumbers(numberInputs, 'numberInputs'),
-            ...addSerialNumbers(phoneInputs, 'phoneInputs'),
-            ...addSerialNumbers(emailInputs, 'emailInputs'),
-            ...addSerialNumbers(dateInputs, 'dateInputs'),
-            ...addSerialNumbers(ratingInputs, 'ratingInputs'),
-            ...addSerialNumbers(buttonInputs, 'buttonInputs')
-        ];
-
         const newForm = new Form({
             formName,
-            textInputs: allInputs.filter(input => input.type === 'textInputs'),
-            imageInputs: allInputs.filter(input => input.type === 'imageInputs'),
-            videoInputs: allInputs.filter(input => input.type === 'videoInputs'),
-            gifInputs: allInputs.filter(input => input.type === 'gifInputs'),
-            tinputs: allInputs.filter(input => input.type === 'tinputs'),
-            numberInputs: allInputs.filter(input => input.type === 'numberInputs'),
-            phoneInputs: allInputs.filter(input => input.type === 'phoneInputs'),
-            emailInputs: allInputs.filter(input => input.type === 'emailInputs'),
-            dateInputs: allInputs.filter(input => input.type === 'dateInputs'),
-            ratingInputs: allInputs.filter(input => input.type === 'ratingInputs'),
-            buttonInputs: allInputs.filter(input => input.type === 'buttonInputs'),
-            refUserId: req.refUserId
+            refUserId: req.refUserId,
+            textInputs: addSerialNumbers(textInputs, 'textInputs'),
+            imageInputs: addSerialNumbers(imageInputs, 'imageInputs'),
+            videoInputs: addSerialNumbers(videoInputs, 'videoInputs'),
+            gifInputs: addSerialNumbers(gifInputs, 'gifInputs'),
+            tinputs: addSerialNumbers(tinputs, 'tinputs'),
+            numberInputs: addSerialNumbers(numberInputs, 'numberInputs'),
+            phoneInputs: addSerialNumbers(phoneInputs, 'phoneInputs'),
+            emailInputs: addSerialNumbers(emailInputs, 'emailInputs'),
+            dateInputs: addSerialNumbers(dateInputs, 'dateInputs'),
+            ratingInputs: addSerialNumbers(ratingInputs, 'ratingInputs'),
+            buttonInputs: addSerialNumbers(buttonInputs, 'buttonInputs')
         });
 
         await newForm.save();
@@ -172,20 +157,6 @@ const updateForm = async (req, res) => {
 
         console.log('Received payload:', req.body);
 
-        const allInputs = [
-            ...addSerialNumbers(textInputs, 'textInputs'),
-            ...addSerialNumbers(imageInputs, 'imageInputs'),
-            ...addSerialNumbers(videoInputs, 'videoInputs'),
-            ...addSerialNumbers(gifInputs, 'gifInputs'),
-            ...addSerialNumbers(tinputs, 'tinputs'),
-            ...addSerialNumbers(numberInputs, 'numberInputs'),
-            ...addSerialNumbers(phoneInputs, 'phoneInputs'),
-            ...addSerialNumbers(emailInputs, 'emailInputs'),
-            ...addSerialNumbers(dateInputs, 'dateInputs'),
-            ...addSerialNumbers(ratingInputs, 'ratingInputs'),
-            ...addSerialNumbers(buttonInputs, 'buttonInputs')
-        ];
-
         const form = await Form.findById(formId);
         if (!form) {
             return res.status(404).json({
@@ -194,29 +165,27 @@ const updateForm = async (req, res) => {
             });
         }
 
+        // Update form fields
         form.formName = formName || form.formName;
-        form.textInputs = allInputs.filter(input => input.type === 'textInputs');
-        form.imageInputs = allInputs.filter(input => input.type === 'imageInputs');
-        form.videoInputs = allInputs.filter(input => input.type === 'videoInputs');
-        form.gifInputs = allInputs.filter(input => input.type === 'gifInputs');
-        form.tinputs = allInputs.filter(input => input.type === 'tinputs');
-        form.numberInputs = allInputs.filter(input => input.type === 'numberInputs');
-        form.phoneInputs = allInputs.filter(input => input.type === 'phoneInputs');
-        form.emailInputs = allInputs.filter(input => input.type === 'emailInputs');
-        form.dateInputs = allInputs.filter(input => input.type === 'dateInputs');
-        form.ratingInputs = allInputs.filter(input => input.type === 'ratingInputs');
-        form.buttonInputs = allInputs.filter(input => input.type === 'buttonInputs');
+        form.textInputs = addSerialNumbers(textInputs, 'textInputs');
+        form.imageInputs = addSerialNumbers(imageInputs, 'imageInputs');
+        form.videoInputs = addSerialNumbers(videoInputs, 'videoInputs');
+        form.gifInputs = addSerialNumbers(gifInputs, 'gifInputs');
+        form.tinputs = addSerialNumbers(tinputs, 'tinputs');
+        form.numberInputs = addSerialNumbers(numberInputs, 'numberInputs');
+        form.phoneInputs = addSerialNumbers(phoneInputs, 'phoneInputs');
+        form.emailInputs = addSerialNumbers(emailInputs, 'emailInputs');
+        form.dateInputs = addSerialNumbers(dateInputs, 'dateInputs');
+        form.ratingInputs = addSerialNumbers(ratingInputs, 'ratingInputs');
+        form.buttonInputs = addSerialNumbers(buttonInputs, 'buttonInputs');
         form.refUserId = refUserId || form.refUserId;
 
         form.visitCount = (form.visitCount || 0) + 1;
         form.views = (form.views || 0) + 1;
 
-        if (!Array.isArray(form.startTimes)) {
-            form.startTimes = [];
-        }
-        if (!Array.isArray(form.updateTimes)) {
-            form.updateTimes = [];
-        }
+        // Ensure arrays are properly initialized
+        form.startTimes = Array.isArray(form.startTimes) ? form.startTimes : [];
+        form.updateTimes = Array.isArray(form.updateTimes) ? form.updateTimes : [];
 
         const currentTime = new Date();
         if (form.startTimes.length === 0) {
@@ -226,15 +195,18 @@ const updateForm = async (req, res) => {
             form.updateTimes.push(currentTime);
         }
 
-        const formattedUpdateTime = moment(currentTime).format('MMM D YYYY, h:mm:ss a');
-        form.lastUpdateTime = formattedUpdateTime;
+        form.lastUpdateTime = moment(currentTime).format('MMM D YYYY, h:mm:ss a');
 
-        const totalInputs = form.tinputs.length + form.numberInputs.length +
-                            form.phoneInputs.length + form.emailInputs.length +
-                            form.dateInputs.length + form.ratingInputs.length +
-                            form.buttonInputs.length;
-
-        const completedInputs = form.tinputs.filter(input => input.value).length +
+        // Calculate completion rate
+        const totalInputs = form.textInputs.length + form.imageInputs.length + form.videoInputs.length +
+                            form.gifInputs.length + form.tinputs.length + form.numberInputs.length +
+                            form.phoneInputs.length + form.emailInputs.length + form.dateInputs.length +
+                            form.ratingInputs.length + form.buttonInputs.length;
+        const completedInputs = form.textInputs.filter(input => input.value).length +
+                                form.imageInputs.filter(input => input.value).length +
+                                form.videoInputs.filter(input => input.value).length +
+                                form.gifInputs.filter(input => input.value).length +
+                                form.tinputs.filter(input => input.value).length +
                                 form.numberInputs.filter(input => input.value).length +
                                 form.phoneInputs.filter(input => input.value).length +
                                 form.emailInputs.filter(input => input.value).length +
@@ -244,6 +216,7 @@ const updateForm = async (req, res) => {
 
         form.completionRate = totalInputs === 0 ? 0 : (completedInputs / totalInputs) * 100;
 
+        // Save the updated form
         const updatedForm = await form.save();
 
         res.status(200).json({
@@ -253,6 +226,7 @@ const updateForm = async (req, res) => {
         });
 
         console.log('Updated Form:', updatedForm);
+
     } catch (error) {
         console.error('Error updating form:', error);
         res.status(500).json({
@@ -261,45 +235,122 @@ const updateForm = async (req, res) => {
             error: error.message
         });
     }
-}; 
+};
 
-const getFormSubmissions = async (req, res) => {
+// Add a submission to a form
+const addFormSubmission = async (req, res) => {
     try {
-        console.log('Request params:', req.params);
-        const formId = req.params.formId;
-        console.log('Received form ID:', formId);
-
-        if (!mongoose.Types.ObjectId.isValid(formId)) {
-            return res.status(400).send({ message: 'Invalid form ID' });
-        }
-
-        // ............
+        const formId = req.params.id
+        const submissionData = req.body;
 
         const form = await Form.findById(formId);
         if (!form) {
-            return res.status(404).send({ message: 'Form not found' });
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Form not found'
+            });
         }
 
-        res.status(200).send({ data: form });
+        // Add serial numbers to the inputs in the submission
+        const newSubmission = {
+            submittedData: {
+                textInputs: addSerialNumbers(submissionData.textInputs, 'textInputs'),
+                imageInputs: addSerialNumbers(submissionData.imageInputs, 'imageInputs'),
+                videoInputs: addSerialNumbers(submissionData.videoInputs, 'videoInputs'),
+                gifInputs: addSerialNumbers(submissionData.gifInputs, 'gifInputs'),
+                tinputs: addSerialNumbers(submissionData.tinputs, 'tinputs'),
+                numberInputs: addSerialNumbers(submissionData.numberInputs, 'numberInputs'),
+                phoneInputs: addSerialNumbers(submissionData.phoneInputs, 'phoneInputs'),
+                emailInputs: addSerialNumbers(submissionData.emailInputs, 'emailInputs'),
+                dateInputs: addSerialNumbers(submissionData.dateInputs, 'dateInputs'),
+                ratingInputs: addSerialNumbers(submissionData.ratingInputs, 'ratingInputs'),
+                buttonInputs: addSerialNumbers(submissionData.buttonInputs, 'buttonInputs')
+            },
+            submissionTime: new Date()
+        };
+
+        form.submissions.push(newSubmission);
+        form.views += 1;
+
+        const updatedForm = await form.save();
+
+        res.status(201).json({
+            status: 'SUCCESS',
+            message: 'Submission added successfully',
+            data: updatedForm
+        });
+
     } catch (error) {
-        console.error('Error fetching form submissions:', error);
-        res.status(500).send({ message: 'Internal server error' });
+        console.error('Error adding submission:', error);
+        res.status(500).json({
+            status: 'Failed',
+            message: 'Error adding submission',
+            error: error.message
+        });
     }
 };
 
-// Delete a form by ID
-const deleteForm = async(req,res,next)=>{
-    try{
-        const formId = req.params.id;
-        await Form.findByIdAndDelete(formId);
+// Get all submissions for a form
+const getFormSubmissions = async (req, res) => {
+    try {
+        const { formId } = req.params;
+
+        const form = await Form.findById(formId);
+        if (!form) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Form not found'
+            });
+        }
+
         res.status(200).json({
-            message:'Form deleted successfully'
-        })
-    }
-    catch(error){
-        next('Error deleting form', error);
-    }
+            status: 'SUCCESS',
+            message: 'Submissions found',
+            data: form.submissions
+        });
 
-}
+    } catch (error) {
+        console.error('Error fetching form submissions:', error);
+        res.status(500).json({
+            status: 'Failed',
+            message: 'Error fetching submissions',
+            error: error.message
+        });
+    }
+};
 
-module.exports = { getForm, addForm, deleteForm, allForms, updateForm,getFormSubmissions };
+// Delete a form
+const deleteForm = async (req, res, next) => {
+    try {
+        const formId = req.params.id;
+        
+        const deletedForm = await Form.findByIdAndDelete(formId);
+        
+        if (!deletedForm) {
+            return res.status(404).json({
+                status: 'Failed',
+                message: 'Form not found'
+            });
+        }
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: 'Form deleted successfully'
+        });
+    } catch (error) {
+        next({
+            message: 'Error deleting form',
+            error: error.message
+        });
+    }
+};
+
+module.exports = {
+    getForm,
+    allForms,
+    addForm,
+    updateForm,
+    addFormSubmission,
+    getFormSubmissions,
+    deleteForm
+};
