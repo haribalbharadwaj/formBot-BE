@@ -1,6 +1,7 @@
 const moment = require('moment');
 const mongoose = require('mongoose');
 const Form = require('../model/form');
+const { format } = require('date-fns');
 
 // Helper function to assign serial numbers
 const addSerialNumbers = (inputs = [], type) => {
@@ -243,6 +244,8 @@ const addFormSubmission = async (req, res) => {
         const formId = req.params.id
         const submissionData = req.body;
 
+        console.log('Received submission data:', submissionData);
+
         const form = await Form.findById(formId);
         if (!form) {
             return res.status(404).json({
@@ -266,8 +269,10 @@ const addFormSubmission = async (req, res) => {
                 ratingInputs: addSerialNumbers(submissionData.ratingInputs, 'ratingInputs'),
                 buttonInputs: addSerialNumbers(submissionData.buttonInputs, 'buttonInputs')
             },
-            submissionTime: new Date()
+            submissionTime: format(new Date(), 'MMM d, h:mm a')
         };
+
+        console.log('New submission to be added:', newSubmission);
 
         form.submissions.push(newSubmission);
         form.views += 1;
@@ -306,7 +311,10 @@ const getFormSubmissions = async (req, res) => {
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Submissions found',
-            data: form.submissions
+            data: form.submissions,
+            views: form.views,
+            startCount: form.startCount,
+            completionRate: form.completionRate
         });
 
     } catch (error) {
